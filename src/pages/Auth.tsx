@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,12 +8,14 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
-import { FileText, Mail, Lock } from "lucide-react";
+import { FileText, Mail, Lock, CheckCircle, AlertCircle } from "lucide-react";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,34 +25,78 @@ const Auth = () => {
         navigate("/dashboard");
       }
     });
-  }, [navigate]);
+
+    // Handle email confirmation
+    const handleAuthCallback = async () => {
+      const token_hash = searchParams.get('token_hash');
+      const type = searchParams.get('type');
+
+      if (token_hash && type === 'signup') {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash,
+          type: 'signup',
+        });
+
+        if (error) {
+          toast.error('Email verification failed: ' + error.message);
+        } else {
+          toast.success('Email verified successfully! You can now sign in.');
+          navigate('/signin');
+        }
+      }
+    };
+
+    handleAuthCallback();
+  }, [navigate, searchParams]);
+
+  useEffect(() => {
+    // Reset verification state when email changes
+    setVerificationSent(false);
+  }, [email]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/signup`,
         },
       });
 
       if (error) {
+        console.error('Sign up error:', error);
         if (error.message.includes("already registered")) {
           toast.error("This email is already registered. Please sign in instead.");
+        } else if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError") || error.message.includes("CORS")) {
+          toast.error("Connection error. Please check your Supabase configuration and ensure your current domain is added to allowed origins.");
+        } else if (error.message.includes("Invalid API key")) {
+          toast.error("Invalid API key. Please check your Supabase configuration.");
         } else {
-          toast.error(error.message);
+          toast.error(`Sign up failed: ${error.message}`);
         }
       } else {
-        toast.success("Account created successfully! You can now sign in.");
-        setEmail("");
-        setPassword("");
+        if (data.user && !data.user.email_confirmed_at) {
+          // Email confirmation required
+          setVerificationSent(true);
+          toast.success("Account created! Please check your email and click the verification link.");
+        } else {
+          // Email already confirmed (shouldn't happen with default settings)
+          toast.success("Account created successfully! You can now sign in.");
+          setEmail("");
+          setPassword("");
+        }
       }
     } catch (error: any) {
-      toast.error(error.message || "An error occurred during sign up");
+      console.error('Sign up exception:', error);
+      if (error.message?.includes("Failed to fetch") || error.name === "TypeError" || error.message?.includes("CORS")) {
+        toast.error("Connection failed. Please ensure your Supabase project allows requests from your current domain.");
+      } else {
+        toast.error(error.message || "An error occurred during sign up");
+      }
     } finally {
       setLoading(false);
     }
@@ -98,6 +144,26 @@ const Auth = () => {
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
+
+            {verificationSent && (
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-2 text-blue-800">
+                  <Mail className="h-5 w-5" />
+                  <div>
+                    <h3 className="font-medium">Check your email</h3>
+                    <p className="text-sm">We've sent a verification link to {email}. Click the link to activate your account.</p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() => setVerificationSent(false)}
+                >
+                  Back to sign up
+                </Button>
+              </div>
+            )}
 
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4 mt-4">

@@ -18,27 +18,57 @@ export const MinimalLayout = ({ data }: MinimalLayoutProps) => {
   };
 
   return (
-    <div className="bg-white text-gray-900 shadow-xl p-12 resume-container" style={{ width: '210mm', minHeight: '297mm' }}>
+    <div className="bg-white text-gray-900 p-12 resume-container" style={{ width: '210mm', minHeight: '297mm', backgroundColor: '#ffffff' }}>
       {/* Header */}
       <div className="border-b-2 border-gray-900 pb-6 mb-8">
         <h1 className="text-4xl font-bold mb-4">{personalInfo.fullName || 'Your Name'}</h1>
         <div className="flex flex-wrap gap-4 text-sm text-gray-700">
           {personalInfo.email && (
-            <span className="flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5" />
-              {personalInfo.email}
+            <span className="flex items-center gap-1.5" style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '6px',
+              lineHeight: '1'
+            }}>
+              <Mail className="w-3.5 h-3.5 flex-shrink-0" style={{ 
+                verticalAlign: 'middle',
+                flexShrink: 0,
+                marginTop: 0,
+                marginBottom: 0
+              }} />
+              <span style={{ lineHeight: '1', display: 'inline-block' }}>{personalInfo.email}</span>
             </span>
           )}
           {personalInfo.phone && (
-            <span className="flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5" />
-              {personalInfo.phone}
+            <span className="flex items-center gap-1.5" style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '6px',
+              lineHeight: '1'
+            }}>
+              <Phone className="w-3.5 h-3.5 flex-shrink-0" style={{ 
+                verticalAlign: 'middle',
+                flexShrink: 0,
+                marginTop: 0,
+                marginBottom: 0
+              }} />
+              <span style={{ lineHeight: '1', display: 'inline-block' }}>{personalInfo.phone}</span>
             </span>
           )}
           {personalInfo.location && (
-            <span className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5" />
-              {personalInfo.location}
+            <span className="flex items-center gap-1.5" style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '6px',
+              lineHeight: '1'
+            }}>
+              <MapPin className="w-3.5 h-3.5 flex-shrink-0" style={{ 
+                verticalAlign: 'middle',
+                flexShrink: 0,
+                marginTop: 0,
+                marginBottom: 0
+              }} />
+              <span style={{ lineHeight: '1', display: 'inline-block' }}>{personalInfo.location}</span>
             </span>
           )}
         </div>
@@ -49,7 +79,7 @@ export const MinimalLayout = ({ data }: MinimalLayoutProps) => {
         {personalInfo.summary && (
           <div>
             <h2 className="text-lg font-bold mb-3 uppercase tracking-wider">Summary</h2>
-            <p className="text-gray-700 leading-relaxed text-justify">{personalInfo.summary}</p>
+            <p className="text-gray-700 leading-relaxed text-justify text-sm" style={{ wordWrap: 'break-word', hyphens: 'auto' }}>{personalInfo.summary}</p>
           </div>
         )}
 
@@ -68,7 +98,7 @@ export const MinimalLayout = ({ data }: MinimalLayoutProps) => {
                   </div>
                   <p className="text-gray-700 mb-2">{exp.company}, {exp.location}</p>
                   {exp.description && (
-                    <p className="text-gray-700 leading-relaxed text-justify">{exp.description}</p>
+                    <p className="text-gray-700 leading-relaxed text-justify text-sm" style={{ wordWrap: 'break-word', hyphens: 'auto' }}>{exp.description}</p>
                   )}
                 </div>
               ))}
@@ -113,7 +143,7 @@ export const MinimalLayout = ({ data }: MinimalLayoutProps) => {
               {projects.map(proj => (
                 <div key={proj.id}>
                   <h3 className="font-bold">{proj.name}</h3>
-                  <p className="text-gray-700 mb-1 text-justify">{proj.description}</p>
+                  <p className="text-gray-700 mb-1 text-justify text-sm" style={{ wordWrap: 'break-word', hyphens: 'auto' }}>{proj.description}</p>
                   {proj.technologies.length > 0 && (
                     <p className="text-sm text-gray-600">
                       {proj.technologies.join(', ')}

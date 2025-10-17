@@ -17,6 +17,7 @@ import { ModernLayout } from "@/components/resume/ModernLayout";
 import { MinimalLayout } from "@/components/resume/MinimalLayout";
 import { ProfessionalLayout } from "@/components/resume/ProfessionalLayout";
 import { TestLayout } from "@/components/resume/TestLayout";
+import { ResumeService } from "@/lib/resumeService";
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
@@ -29,10 +30,22 @@ const Builder = () => {
 
   const [resumeData, setResumeData] = useState<ResumeData>({
     title: 'My Resume',
-    personalInfo: { fullName: '', email: '', phone: '', location: '', linkedin: '', website: '', summary: '' },
-    education: [{ id: '1', institution: '', degree: '', field: '', startDate: '', endDate: '', gpa: '' }],
-    skills: [],
-    experience: [{ id: '1', company: '', position: '', location: '', startDate: '', endDate: '', current: false, description: '' }],
+    personalInfo: { 
+      fullName: 'Your Name', 
+      email: 'your.email@example.com', 
+      phone: '+1 (555) 123-4567', 
+      location: 'City, State', 
+      linkedin: '', 
+      website: '', 
+      summary: 'Professional summary goes here...' 
+    },
+    education: [{ id: '1', institution: 'University Name', degree: 'Degree', field: 'Field of Study', startDate: '2020-01', endDate: '2024-05', gpa: '' }],
+    skills: [
+      { id: '1', name: 'Skill 1', category: 'technical' },
+      { id: '2', name: 'Skill 2', category: 'technical' },
+      { id: '3', name: 'Skill 3', category: 'technical' }
+    ],
+    experience: [{ id: '1', company: 'Company Name', position: 'Job Title', location: 'Location', startDate: '2022-01', endDate: '', current: true, description: 'Job description and achievements...' }],
     projects: [],
     certifications: [],
     templateLayout: 'modern'
@@ -49,7 +62,7 @@ const Builder = () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       toast.error("Please sign in to use the resume builder");
-      navigate("/auth");
+      navigate("/signin");
       return;
     }
 
@@ -80,18 +93,38 @@ const Builder = () => {
 
       if (data) {
         setResumeId(id);
+        
+        // Check if using new resume_data JSONB field or old individual columns
+        let resumeDataFromDB;
+        
+        if ((data as any).resume_data) {
+          // New schema with JSONB field
+          resumeDataFromDB = (data as any).resume_data;
+        } else {
+          // Old schema with individual columns - reconstruct the data
+          resumeDataFromDB = {
+            personalInfo: data.personal_info || {},
+            education: data.education || [],
+            skills: data.skills || [],
+            experience: data.experience || [],
+            projects: data.projects || [],
+            certifications: data.certifications || []
+          };
+        }
+        
         setResumeData({
           id: data.id,
           title: data.title,
-          personalInfo: data.personal_info as unknown as PersonalInfo,
-          education: (data.education || []) as unknown as Education[],
-          skills: (data.skills || []) as unknown as Skill[],
-          experience: (data.experience || []) as unknown as Experience[],
-          projects: (data.projects || []) as unknown as Project[],
-          certifications: (data.certifications || []) as unknown as Certification[],
+          personalInfo: resumeDataFromDB.personalInfo || { fullName: '', email: '', phone: '', location: '', linkedin: '', website: '', summary: '' },
+          education: resumeDataFromDB.education || [{ id: '1', institution: '', degree: '', field: '', startDate: '', endDate: '', gpa: '' }],
+          skills: resumeDataFromDB.skills || [],
+          experience: resumeDataFromDB.experience || [{ id: '1', company: '', position: '', location: '', startDate: '', endDate: '', current: false, description: '' }],
+          projects: resumeDataFromDB.projects || [],
+          certifications: resumeDataFromDB.certifications || [],
           templateLayout: data.template_layout as any || 'modern'
         });
         console.log('Loaded resume with template:', data.template_layout);
+        console.log('Loaded resume data:', resumeDataFromDB);
       }
     } catch (error: any) {
       toast.error("Failed to load resume");
@@ -101,20 +134,16 @@ const Builder = () => {
   const saveResume = async () => {
     if (!userId) {
       toast.error("Please sign in to save");
-      return;
+      throw new Error("User not authenticated");
     }
 
     try {
       const resumePayload = {
         user_id: userId,
-        title: resumeData.title,
+        title: resumeData.title || 'Untitled Resume',
         template_layout: resumeData.templateLayout,
-        personal_info: resumeData.personalInfo as any,
-        education: resumeData.education as any,
-        skills: resumeData.skills as any,
-        experience: resumeData.experience as any,
-        projects: resumeData.projects as any,
-        certifications: resumeData.certifications as any
+        resume_data: resumeData,
+        status: 'draft'
       };
 
       if (resumeId) {
@@ -125,6 +154,7 @@ const Builder = () => {
         
         if (error) throw error;
         toast.success("Resume updated successfully!");
+        return resumeId;
       } else {
         const { data, error } = await supabase
           .from('resumes')
@@ -135,86 +165,67 @@ const Builder = () => {
         if (error) throw error;
         setResumeId(data.id);
         toast.success("Resume saved successfully!");
+        return data.id;
       }
     } catch (error: any) {
-      toast.error("Failed to save resume");
+      console.error("Save resume error:", error);
+      toast.error("Failed to save resume: " + (error.message || "Unknown error"));
+      throw error;
     }
   };
 
   const handleDownloadPDF = async () => {
     try {
-      const element = document.getElementById('resume-preview');
-      if (!element) {
-        console.error('Resume preview element not found');
-        toast.error('Resume preview not found');
-        return;
+      let currentResumeId = resumeId;
+      
+      // First save the resume if not already saved
+      if (!currentResumeId) {
+        toast.info("Saving resume first...");
+        
+        // Use the returned ID from saveResume
+        currentResumeId = await saveResume();
+        
+        if (!currentResumeId) {
+          toast.error("Failed to save resume. Please try again.");
+          return;
+        }
+        
+        console.log("Resume saved with ID:", currentResumeId);
       }
+
+      toast.info("Generating PDF...");
       
-      console.log('Starting PDF generation...');
-      console.log('Resume data:', resumeData);
-      console.log('Element found:', element);
+      const { data, error } = await ResumeService.generateAndSavePDF(
+        currentResumeId, 
+        'resume-preview', 
+        resumeData.title || 'resume'
+      );
+
+      if (error) {
+        console.error('PDF generation error:', error);
+        throw new Error(error.message);
+      }
+
+      console.log('PDF generation result:', data);
       
+      if (!data?.pdf_file_name) {
+        throw new Error('PDF generation succeeded but no file name returned');
+      }
+
+      toast.success("PDF generated! Starting download...");
       
-      const originalTransform = element.style.transform;
-      const originalTransformOrigin = element.style.transformOrigin;
-      const originalWidth = element.style.width;
-      const originalOverflow = element.style.overflow;
+      // Download the PDF immediately after saving
+      await ResumeService.downloadPDF(currentResumeId, data.pdf_file_name);
       
-      // Temporarily remove scaling for proper capture
-      element.style.transform = 'none';
-      element.style.transformOrigin = 'top left';
-      element.style.width = '210mm';
-      element.style.overflow = 'visible';
+      toast.success("PDF downloaded successfully!");
       
-      console.log('Element styles updated for capture');
-      
-      // Wait a bit for the DOM to update
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      console.log('Starting html2canvas...');
-      const canvas = await html2canvas(element, { 
-        scale: 2, // Good quality without being too heavy
-        useCORS: true, 
-        backgroundColor: '#ffffff',
-        logging: true, // Enable logging to see what's happening
-        allowTaint: true,
-        foreignObjectRendering: true,
-        scrollX: 0,
-        scrollY: 0,
-        width: element.scrollWidth,
-        height: element.scrollHeight
-      });
-      
-      console.log('Canvas created:', canvas.width, 'x', canvas.height);
-      
-      // Restore original styles
-      element.style.transform = originalTransform;
-      element.style.transformOrigin = originalTransformOrigin;
-      element.style.width = originalWidth;
-      element.style.overflow = originalOverflow;
-      
-      const imgData = canvas.toDataURL('image/png', 1.0);
-      console.log('Image data generated, length:', imgData.length);
-      
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      // Ensure the image fits within the page
-      const pageHeight = 297;
-      const adjustedHeight = imgHeight > pageHeight ? pageHeight : imgHeight;
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, adjustedHeight);
-      
-      const fileName = `${resumeData.personalInfo.fullName || 'resume'}_${resumeData.templateLayout}.pdf`;
-      pdf.save(fileName);
-      console.log('PDF saved:', fileName);
-      toast.success('Resume downloaded successfully!');
-    } catch (error) {
-      console.error('PDF generation error:', error);
-      toast.error('Failed to download resume');
+    } catch (error: any) {
+      console.error('PDF generation failed:', error);
+      toast.error("Failed to generate PDF: " + (error.message || "Unknown error"));
     }
   };
+
+
 
   const addSkill = () => {
     if (newSkill.name.trim()) {
@@ -543,7 +554,7 @@ const Builder = () => {
                     </span>
                   </div>
                 </div>
-                <div className="border rounded overflow-auto bg-gray-50" style={{ maxHeight: '800px' }}>
+                <div className="border rounded bg-gray-50 overflow-hidden">
                   <div id="resume-preview" style={{ transform: 'scale(0.6)', transformOrigin: 'top left', width: '166.67%' }}>
                     {renderResumePreview()}
                   </div>

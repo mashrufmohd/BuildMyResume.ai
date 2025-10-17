@@ -5,9 +5,11 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { FileText, Plus, Trash2, Edit, Download, Calendar } from "lucide-react";
+import { FileText, Plus, Trash2, Edit, Download, Calendar, Eye, FileDown } from "lucide-react";
 import { User } from "@supabase/supabase-js";
+import { ResumeService } from "@/lib/resumeService";
 
 interface Resume {
   id: string;
@@ -15,6 +17,10 @@ interface Resume {
   template_layout: string;
   created_at: string;
   updated_at: string;
+  pdf_url?: string | null;
+  pdf_file_name?: string | null;
+  pdf_file_size?: number | null;
+  status?: string | null;
 }
 
 const Dashboard = () => {
@@ -31,7 +37,7 @@ const Dashboard = () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
-      navigate("/auth");
+      navigate("/signin");
       return;
     }
 
@@ -58,11 +64,8 @@ const Dashboard = () => {
 
   const deleteResume = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from("resumes")
-        .delete()
-        .eq("id", id);
-
+      const { error } = await ResumeService.deleteResume(id);
+      
       if (error) throw error;
 
       setResumes(resumes.filter(r => r.id !== id));
@@ -70,6 +73,39 @@ const Dashboard = () => {
     } catch (error: any) {
       toast.error("Failed to delete resume");
     }
+  };
+
+  const downloadPDF = async (resume: Resume) => {
+    if (!resume.pdf_file_name) {
+      toast.error("No PDF available for this resume");
+      return;
+    }
+
+    try {
+      await ResumeService.downloadPDF(resume.id, resume.pdf_file_name);
+      toast.success("PDF downloaded successfully");
+    } catch (error: any) {
+      toast.error("Failed to download PDF");
+    }
+  };
+
+  const getStatusColor = (status?: string | null) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'published':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatFileSize = (bytes?: number | null) => {
+    if (!bytes) return '';
+    const kb = bytes / 1024;
+    if (kb < 1024) return `${kb.toFixed(1)} KB`;
+    const mb = kb / 1024;
+    return `${mb.toFixed(1)} MB`;
   };
 
   const formatDate = (dateString: string) => {
@@ -134,6 +170,16 @@ const Dashboard = () => {
                       <p className="text-sm text-muted-foreground capitalize">
                         {resume.template_layout} Template
                       </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge className={getStatusColor(resume.status)}>
+                          {resume.status || 'draft'}
+                        </Badge>
+                        {resume.pdf_file_name && (
+                          <Badge variant="outline" className="text-xs">
+                            PDF ({formatFileSize(resume.pdf_file_size)})
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     <FileText className="h-5 w-5 text-primary flex-shrink-0" />
                   </div>
@@ -143,7 +189,7 @@ const Dashboard = () => {
                     <span>Updated {formatDate(resume.updated_at)}</span>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-1">
                     <Button
                       variant="outline"
                       size="sm"
@@ -153,6 +199,16 @@ const Dashboard = () => {
                       <Edit className="h-3 w-3 mr-1" />
                       Edit
                     </Button>
+                    {resume.pdf_file_name && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => downloadPDF(resume)}
+                        title="Download PDF"
+                      >
+                        <FileDown className="h-3 w-3" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -161,6 +217,7 @@ const Dashboard = () => {
                           deleteResume(resume.id);
                         }
                       }}
+                      title="Delete Resume"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>

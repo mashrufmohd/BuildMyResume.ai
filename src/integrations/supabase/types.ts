@@ -21,9 +21,13 @@ export type Database = {
           education: Json[] | null
           experience: Json[] | null
           id: string
+          pdf_file_name: string | null
+          pdf_file_size: number | null
+          pdf_url: string | null
           personal_info: Json
           projects: Json[] | null
           skills: Json[] | null
+          status: string | null
           template_layout: string
           title: string
           updated_at: string | null
@@ -35,9 +39,13 @@ export type Database = {
           education?: Json[] | null
           experience?: Json[] | null
           id?: string
+          pdf_file_name?: string | null
+          pdf_file_size?: number | null
+          pdf_url?: string | null
           personal_info?: Json
           projects?: Json[] | null
           skills?: Json[] | null
+          status?: string | null
           template_layout?: string
           title: string
           updated_at?: string | null
@@ -49,9 +57,13 @@ export type Database = {
           education?: Json[] | null
           experience?: Json[] | null
           id?: string
+          pdf_file_name?: string | null
+          pdf_file_size?: number | null
+          pdf_url?: string | null
           personal_info?: Json
           projects?: Json[] | null
           skills?: Json[] | null
+          status?: string | null
           template_layout?: string
           title?: string
           updated_at?: string | null

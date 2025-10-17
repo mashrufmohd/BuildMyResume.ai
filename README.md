@@ -1,10 +1,10 @@
-# 🎯 AI-Powered Resume Builder
+# BuildMyResume.ai — AI-Powered Resume Builder
 
-Create stunning, professional, ATS-friendly resumes in minutes with our intelligent resume builder. No design skills required!
-
-![Resume Builder](https://img.shields.io/badge/Status-Live-success)
-![Tech](https://img.shields.io/badge/Tech-React%20%7C%20TypeScript%20%7C%20Tailwind-blue)
+![Hacktoberfest-2025](https://img.shields.io/badge/Hacktoberfest-2025-brightgreen)
+![Tech](https://img.shields.io/badge/Tech-React%20%7C%20TypeScript%20%7C%20Vite%20%7C%20Tailwind-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
+
+Craft modern, ATS-friendly resumes in minutes — no design skills required. Fast, clean, and print-ready templates built for developers and recruiters.
 
 ## ✨ Features
 
@@ -15,93 +15,119 @@ Create stunning, professional, ATS-friendly resumes in minutes with our intellig
 - **✅ ATS-Friendly** - Optimized formatting to pass Applicant Tracking Systems
 - **🚀 Easy to Use** - Intuitive multi-step form guides you through the process
 
-## 🛠️ Tech Stack
+## Why contribute?
+- Friendly for first-timers and experienced contributors
+- Clear issues labeled for Hacktoberfest and `good-first-issue`
+- Small, focused tasks you can finish in under a day
+- Opportunity to add a resume template or improve export quality
 
-- **Frontend**: React 18 + TypeScript
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS + shadcn/ui components
-- **PDF Generation**: html2canvas + jsPDF
-- **Icons**: Lucide React
-- **State Management**: React Hooks
+## Quick links
+- Live dev (local): http://localhost:5173 (or the port shown in terminal)
 
-## 🚀 Getting Started
+## Table of contents
+- [Getting started](#getting-started)
+- [Contributing guide (Hacktoberfest-friendly)](#contributing-guide-hacktoberfest-friendly)
+- [Good first issues and ideas](#good-first-issues-and-ideas)
+- [Project structure](#project-structure)
+- [Development tips](#development-tips)
+- [Code of Conduct & License](#code-of-conduct--license)
 
-### Prerequisites
+## Getting started
+These steps will get the project running locally on your machine.
 
-- Node.js 16+ and npm installed
+Prerequisites
+- Node.js 16+ (or compatible), npm
 - Git
 
-### Installation
+Setup
+1. Fork the repository on GitHub and clone your fork:
 
-1. Clone the repository:
-```bash
-git clone <YOUR_GIT_URL>
-cd <YOUR_PROJECT_NAME>
+```powershell
+git clone https://github.com/<your-username>/BuildMyResume.ai.git
+cd BuildMyResume.ai
 ```
 
 2. Install dependencies:
-```bash
+
+```powershell
 npm install
 ```
 
-3. Start the development server:
-```bash
+3. Start the dev server:
+
+```powershell
 npm run dev
 ```
 
-4. Open your browser and navigate to `http://localhost:8080`
+4. Open your browser and visit:
 
-## 📖 How to Use
+```
+http://localhost:8080
+```
 
-1. **Personal Information** - Enter your contact details and professional summary
-2. **Education** - Add your academic background
-3. **Skills** - List your technical and soft skills
-4. **Experience** - Detail your work history and achievements
-5. **Projects** - Showcase your notable projects
-6. **Preview & Download** - Review your resume and download as PDF
+If you see a blank page, open the browser DevTools console and the terminal running Vite for errors. See [Development tips](#development-tips) below.
 
-## 🎨 Resume Layouts
+## Contributing guide (Hacktoberfest-friendly)
+We welcome contributions of all sizes. Follow these steps to contribute:
 
-### Modern Layout
-- Two-column design with gradient header
-- Perfect for creative professionals
-- Highlights visual appeal
+1. Fork the repo and create a branch named `feature/your-thing` or `fix/issue-id`.
+2. Make small, focused changes with clear commits.
+3. Run the app and tests (if applicable).
+4. Open a pull request against `main` with a clear description of your change.
 
-### Minimal Layout
-- Clean, single-column format
-- Ideal for conservative industries
-- Focus on content clarity
+PR Checklist (maintainers and contributors):
+- [ ] The change is limited in scope and easy to review
+- [ ] The app builds and runs locally
+- [ ] No sensitive information (secrets) was added
+- [ ] Documentation updated if relevant (README, comments)
 
-### Professional Layout
-- Structured corporate style
-- Best for traditional roles
-- Emphasizes organization
+Labels we use (suggested for maintainers):
+- `hacktoberfest` — tasks that qualify for Hacktoberfest
+- `good-first-issue` — small tasks for newcomers
+- `help-wanted` — tasks that need contributions
+- `enhancement` — feature requests
+- `bug` — bug reports
 
-## 📱 Responsive Design
+## Good first issues and ideas
+Here are some small improvements that are great for first contributions:
+- Fix small UI layout bugs on mobile
+- Add keyboard accessibility to template selector
+- Improve PDF export fidelity for long resumes
+- Add a new resume template (e.g. "Academic", "Creative")
+- Improve README with screenshots and GIFs
 
-The application is fully responsive with breakpoints for:
-- 📱 Mobile (< 768px)
-- 📱 Tablet (768px - 1024px)
-- 💻 Desktop (> 1024px)
+If you'd like to pick one, leave a comment on the issue so maintainers know you're working on it.
 
-## 🤝 Contributing
+## Project structure
+Key folders and files:
+- `src/` — React/TS source code
+	- `components/` — shared UI components and resume templates
+	- `pages/` — route pages (Home, Builder, Dashboard, etc.)
+	- `integrations/` — supabase client config
+	- `types/` — TypeScript types
+- `public/` — static assets
+- `vite.config.ts` — Vite configuration
+- `package.json` — scripts and dependencies
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## Development tips
+- If Vite fails to start with a module error, check `vite.config.ts` for plugin imports and ensure packages exist in `package.json`.
+- To debug a blank page: open DevTools (F12) → Console and Network tabs for runtime errors or missing files.
+- Use `npm run build` to test production build locally: `npm run build; npm run preview`.
 
-## 📄 License
+Troubleshooting common issues
+- Missing package error: run `npm install` and confirm the package appears in `package.json`.
+- Port conflicts: If `8080` is in use, pass a different port in `vite` command or edit `vite.config.ts`.
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+## Tests
+There are no automated tests currently; PRs that add useful tests are welcome.
 
-## 🙏 Acknowledgments
+## Code of Conduct & License
+Please follow the repository Code of Conduct (create `CODE_OF_CONDUCT.md` if you wish). This project is licensed under the MIT License. See `LICENSE` for details.
 
-- Built with [Lovable](https://lovable.dev)
-- UI components from [shadcn/ui](https://ui.shadcn.com)
-- Icons from [Lucide](https://lucide.dev)
-
-## 📞 Support
-
-For support, please open an issue in the GitHub repository or contact the maintainers.
+## Maintainers & Contact
+Maintainer: mashrufmohd
+For questions or help, open an issue on GitHub.
 
 ---
 
-**Made with ❤️ using Lovable**
+Thank you for contributing — have fun at Hacktoberfest 2025! 🎉

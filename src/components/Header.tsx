@@ -1,9 +1,17 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, FileText, LogIn, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, X, FileText, LogIn, LogOut, LayoutDashboard, User as UserIcon, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -62,20 +70,48 @@ export const Header = () => {
                 <Link to="/dashboard" className="text-gray-700 hover:text-purple-600 transition-colors font-medium">
                   Dashboard
                 </Link>
-                <Button variant="outline" size="sm" onClick={handleSignOut} className="border-gray-300">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="border-gray-300">
+                      <UserIcon className="h-4 w-4 mr-2" />
+                      Profile
+                      <ChevronDown className="h-4 w-4 ml-2" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuItem className="flex-col items-start">
+                      <span className="font-medium">{user.email}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {user.user_metadata?.full_name || 'User'}
+                      </span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                      <LayoutDashboard className="h-4 w-4 mr-2" />
+                      Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/profile')}>
+                      <UserIcon className="h-4 w-4 mr-2" />
+                      Profile Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : (
               <>
-                <Link to="/auth">
+                <Link to="/signin">
                   <Button variant="outline" size="sm" className="border-gray-300">
                     <LogIn className="h-4 w-4 mr-2" />
                     Login
                   </Button>
                 </Link>
-                <Link to="/auth">
+                <Link to="/signup">
                   <Button size="sm" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6">
                     Sign Up
                   </Button>
@@ -119,13 +155,28 @@ export const Header = () => {
               Templates
             </Link>
             {user ? (
-              <>
+              <div className="space-y-2">
+                <div className="p-2 bg-gray-50 rounded-lg">
+                  <div className="text-sm font-medium">{user.email}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {user.user_metadata?.full_name || 'User'}
+                  </div>
+                </div>
                 <Link
                   to="/dashboard"
                   className="block py-2 text-foreground hover:text-primary transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
+                  <LayoutDashboard className="h-4 w-4 mr-2 inline" />
                   Dashboard
+                </Link>
+                <Link
+                  to="/profile"
+                  className="block py-2 text-foreground hover:text-primary transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <UserIcon className="h-4 w-4 mr-2 inline" />
+                  Profile Settings
                 </Link>
                 <Button
                   variant="ghost"
@@ -134,19 +185,26 @@ export const Header = () => {
                     handleSignOut();
                     setIsMenuOpen(false);
                   }}
-                  className="w-full justify-start"
+                  className="w-full justify-start text-red-600"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
                 </Button>
-              </>
+              </div>
             ) : (
-              <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
-                <Button size="sm" className="w-full">
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Sign In
-                </Button>
-              </Link>
+              <div className="space-y-2">
+                <Link to="/signin" onClick={() => setIsMenuOpen(false)}>
+                  <Button variant="outline" size="sm" className="w-full">
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
+                  <Button size="sm" className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white">
+                    Sign Up
+                  </Button>
+                </Link>
+              </div>
             )}
           </div>
         )}
