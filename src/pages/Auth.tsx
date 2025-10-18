@@ -28,21 +28,13 @@ const Auth = () => {
 
     // Handle email confirmation
     const handleAuthCallback = async () => {
-      const token_hash = searchParams.get('token_hash');
-      const type = searchParams.get('type');
-
-      if (token_hash && type === 'signup') {
-        const { error } = await supabase.auth.verifyOtp({
-          token_hash,
-          type: 'signup',
-        });
-
-        if (error) {
-          toast.error('Email verification failed: ' + error.message);
-        } else {
-          toast.success('Email verified successfully! You can now sign in.');
-          navigate('/signin');
-        }
+      const { data, error } = await supabase.auth.getSession();
+      
+      if (data.session) {
+        toast.success('Email verified successfully! You are now signed in.');
+        navigate('/dashboard');
+      } else if (error) {
+        toast.error('Email verification failed: ' + error.message);
       }
     };
 
@@ -63,7 +55,7 @@ const Auth = () => {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/signup`,
+          emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
