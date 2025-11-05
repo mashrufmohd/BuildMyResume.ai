@@ -100,15 +100,49 @@ If you'd like to pick one, leave a comment on the issue so maintainers know you'
 
 ## Project structure
 Key folders and files:
-- `src/` — React/TS source code
-	- `components/` — shared UI components and resume templates
-	- `pages/` — route pages (Home, Builder, Dashboard, etc.)
-	- `integrations/` — supabase client config
-	- `types/` — TypeScript types
-- `public/` — static assets
-- `vite.config.ts` — Vite configuration
-- `package.json` — scripts and dependencies
-
+```
+BuildMyResume.ai/
+├── public/                 # Static assets
+│   ├── robots.txt
+│   └── site.webmanifest
+├── src/
+│   ├── components/         # React components
+│   │   ├── ui/            # shadcn/ui components
+│   │   ├── resume/        # Resume template layouts
+│   │   ├── Header.tsx
+│   │   └── Footer.tsx
+│   ├── pages/             # Route pages
+│   │   ├── Home.tsx
+│   │   ├── Dashboard.tsx
+│   │   ├── Builder.tsx
+│   │   ├── Templates.tsx
+│   │   ├── SignIn.tsx
+│   │   ├── SignUp.tsx
+│   │   ├── Profile.tsx
+│   │   └── NotFound.tsx
+│   ├── integrations/      # External services
+│   │   └── supabase/
+│   │       ├── client.ts
+│   │       └── types.ts
+│   ├── lib/               # Utility functions
+│   │   ├── utils.ts
+│   │   └── resumeService.ts
+│   ├── types/             # TypeScript types
+│   │   └── resume.ts
+│   ├── hooks/             # Custom React hooks
+│   │   └── use-toast.ts
+│   ├── App.tsx            # Main app component
+│   ├── main.tsx           # Entry point
+│   └── index.css          # Global styles
+├── supabase/              # Supabase migrations
+│   └── migrations/
+├── .env.example           # Environment variables template
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+├── tailwind.config.ts
+└── README.md
+```
 ## Development tips
 - If Vite fails to start with a module error, check `vite.config.ts` for plugin imports and ensure packages exist in `package.json`.
 - To debug a blank page: open DevTools (F12) → Console and Network tabs for runtime errors or missing files.
