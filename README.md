@@ -1,4 +1,4 @@
-# BuildMyResume.ai — AI-Powered Resume Builder
+# BuildMyResume
 
 ![Hacktoberfest-2025](https://img.shields.io/badge/Hacktoberfest-2025-brightgreen)
 ![Tech](https://img.shields.io/badge/Tech-React%20%7C%20TypeScript%20%7C%20Vite%20%7C%20Tailwind-blue)
